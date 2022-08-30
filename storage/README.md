@@ -1,6 +1,6 @@
-# Java Client For Nutanix Clustermgmt Versioned APIs
+# Java Client For Nutanix Storage Versioned APIs
 
-The Java client for Nutanix Clustermgmt Versioned APIs is designed for Java client application developers offering them simple and flexible access to APIs that manage Hosts, Clusters and other Infrastructure.
+The Java client for Nutanix Storage Versioned APIs is designed for Java client application developers offering them simple and flexible access to APIs that manages volume groups and storage containers in Nutanix cluster.
 ## Features
 - Invoke Nutanix APIs with a simple interface.
 - Handle Authentication seamlessly.
@@ -8,8 +8,8 @@ The Java client for Nutanix Clustermgmt Versioned APIs is designed for Java clie
 - Use standard methods for installation.
 ## Version
 
-- API version: v4.0.a1
-- Package version: 4.0.1-alpha-1
+- API version: v4.0.a2
+- Package version: 4.0.1-alpha-2
 
 ## Requirements.
 
@@ -27,8 +27,8 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 ```xml
 <dependency>
   <groupId>com.nutanix.api</groupId>
-  <artifactId>clustermgmt-java-client</artifactId>
-  <version>4.0.1-alpha-1</version>
+  <artifactId>storage-java-client</artifactId>
+  <version>4.0.1-alpha-2</version>
 </dependency>
 ```
 
@@ -36,13 +36,13 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 
 ```groovy
 dependencies {
-    implementation("com.nutanix.api:clustermgmt-java-client:4.0.1-alpha-1")
+    implementation("com.nutanix.api:storage-java-client:4.0.1-alpha-2")
 }
 ```
 
 ## Configuration
 
-The Java client for Nutanix Clustermgmt Versioned APIs can be configured with the following parameters
+The Java client for Nutanix Storage Versioned APIs can be configured with the following parameters
 
 | Parameter | Description                                                                      | Required | Default Value|
 |-----------|----------------------------------------------------------------------------------|----------|--------------|
@@ -59,7 +59,7 @@ The Java client for Nutanix Clustermgmt Versioned APIs can be configured with th
 ### Sample Configuration
 
 ```java
-import com.nutanix.clu.java.client.ApiClient;
+import com.nutanix.sto.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -81,7 +81,7 @@ The client can be configured to retry requests that fail with the following stat
 - [502 - Bad Gateway](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502)
 - [503 - Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503)
 ```java
-import com.nutanix.clu.java.client.ApiClient;
+import com.nutanix.sto.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -97,19 +97,18 @@ public class Sample {
 ### Invoking an operation
 
 ```java
-// this sample code is not usable directly for real use-case
-
-import com.nutanix.clu.java.client.ApiClient;
-import com.nutanix.clu.java.client.api.SampleApi;
+import com.nutanix.sto.java.client.ApiClient;
+import com.nutanix.sto.java.client.api.StorageContainerApi;
+import com.nutanix.dp1.sto.storage.v4.config.StorageContainerResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    SampleApi sampleApi = new SampleApi(client);
-    final String extId = '66673023168b486898d76bc27e5ce9c2';
-    SampleGetResponse sampleResponse = sampleApi.getSampleByExtId(extId);
+    StorageContainerApi storageContainerApi = new StorageContainerApi(client);
+    String containerExtId = "^b0fBC6cf-0CfD-FcED-bcce-65C9759CAcFc$";
+    StorageContainerResponse storageContainerResponse = storageContainerApi.getStorageContainerByExtId(containerExtId);
   }
 }
 ```
@@ -120,7 +119,7 @@ The library provides the ability to specify additional options that can be appli
 The 'ApiClient' can be configured to send additional headers on each request.
 
 ```java
-import com.nutanix.clu.java.client.ApiClient;
+import com.nutanix.sto.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -134,26 +133,27 @@ You can also modify the headers sent with each individual operation:
 #### Operation specific headers
 Nutanix APIs require that concurrent updates are protected using [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) headers. This would mean that the [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) header received in the response of a fetch (GET) operation should be used as an [If-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match) header for the modification (PUT) operation.
 ```java
-import com.nutanix.clu.java.client.ApiClient;
-
-
-// this sample code is not usable directly for real use-case
+import com.nutanix.sto.java.client.ApiClient;
+import com.nutanix.dp1.sto.storage.v4.config.StorageContainerResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    SampleApi samplesApi = new SampleApi(client);
-    final String extId = '66673023168b486898d76bc27e5ce9c2';
-    SampleGetResponse sampleResponse = samplesApi.getSampleByExtId(extId);
+    // perform GET call
+    StorageContainerApi storageContainerApi = new StorageContainerApi(client);
+    String containerExtId = "^b0fBC6cf-0CfD-FcED-bcce-65C9759CAcFc$";
+    StorageContainerResponse storageContainerResponse = storageContainerApi.getStorageContainerByExtId(containerExtId);
     // Extract E-Tag Header
-    final String eTagHeader = ApiClient.getEtag(sampleResponse);
+    final String eTagHeader = ApiClient.getEtag(storageContainerResponse);
     // ...
-    Sample body = (Sample) sampleResponse.getData();
+    // Perform update call with received E-Tag reference
+    StorageContainer storageContainer = (StorageContainer) storageContainerResponse.getData();
+    // initialize/change parameters for update
     HashMap<String, Object> opts = new HashMap<>();
     opts.put("If-Match", eTagHeader);
-    samplesApi.updateSampleByExtId(body,extId,opts);
+    storageContainerApi.updateStorageContainer(storageContainer, containerExtId, opts);
   }
 }
 
@@ -173,21 +173,22 @@ List Operations for Nutanix APIs support pagination, filtering, sorting and proj
 
 List Options can be passed to list operations in order to perform pagination, filtering etc.
 ```java
-import com.nutanix.clu.java.client.ApiClient;
-import com.nutanix.clu.java.client.api.ClusterApi;
-import com.nutanix.dp1.clu.clustermgmt.v4.config.GetClustersResponse;
+import com.nutanix.sto.java.client.ApiClient;
+import com.nutanix.sto.java.client.api.StorageContainerApi;
+import com.nutanix.dp1.sto.storage.v4.config.StorageContainersResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    ClusterApi clusterApi = new ClusterApi(client);
+    StorageContainerApi storageContainerApi = new StorageContainerApi(client);
     int $page = 0;
     int $limit = 50;
     String $filter = "string_sample_data";
     String $orderby = "string_sample_data";
-    GetClustersResponse getClustersResponse = clusterApi.getClusters($page, $limit, $filter, $orderby);
+    String $select = "string_sample_data";
+    StorageContainersResponse storageContainersResponse = storageContainerApi.getAllStorageContainers($page, $limit, $filter, $orderby, $select);
   }
 }
 ```
