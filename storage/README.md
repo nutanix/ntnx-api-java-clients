@@ -8,8 +8,8 @@ The Java client for Nutanix Storage Versioned APIs is designed for Java client a
 - Use standard methods for installation.
 ## Version
 
-- API version: v4.0.a2
-- Package version: 4.0.1-alpha-2
+- API version: v4.0.a3
+- Package version: 4.0.2-alpha-3
 
 ## Requirements.
 
@@ -20,7 +20,7 @@ The Java client for Nutanix Storage Versioned APIs is designed for Java client a
 
 ### Installation
 
-This library is distributed on [Maven Central](https://mvnrepository.com/repos/central). In order to add it as a dependency, please do the following:
+This library is distributed on [Maven Central](https://search.maven.org/). In order to add it as a dependency, please do the following:
 
 #### Using Maven
 
@@ -28,7 +28,7 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 <dependency>
   <groupId>com.nutanix.api</groupId>
   <artifactId>storage-java-client</artifactId>
-  <version>4.0.1-alpha-2</version>
+  <version>4.0.2-alpha-3</version>
 </dependency>
 ```
 
@@ -36,7 +36,7 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 
 ```groovy
 dependencies {
-    implementation("com.nutanix.api:storage-java-client:4.0.1-alpha-2")
+    implementation("com.nutanix.api:storage-java-client:4.0.2-alpha-3")
 }
 ```
 
@@ -46,6 +46,7 @@ The Java client for Nutanix Storage Versioned APIs can be configured with the fo
 
 | Parameter | Description                                                                      | Required | Default Value|
 |-----------|----------------------------------------------------------------------------------|----------|--------------|
+| scheme    | URI scheme for connecting to the cluster (HTTP or HTTPS using SSL/TLS)           | No       | https        |
 | host      | IPv4/IPv6 address or FQDN of the cluster to which the client will connect to     | Yes      | N/A          |
 | port      | Port on the cluster to which the client will connect to                          | No       | 9440         |
 | username  | Username to connect to a cluster                                                 | Yes      | N/A          |
@@ -54,7 +55,9 @@ The Java client for Nutanix Storage Versioned APIs can be configured with the fo
 | verifySsl | Verify SSL certificate of cluster, the client will connect to                    | No       | True         |
 | maxRetryAttempts| Maximum number of retry attempts while connecting to the cluster           | No       | 5            |
 | retryInterval| Interval in milliseconds at which retry attempts are made                     | No       | 3000         |
-| timeout   | Global timeout in milliseconds for all operations                                | No       | 30000        |
+| connectTimeout| Connection timeout in milliseconds for all operations                        | No       | 30000        |
+| readTimeout| Read timeout in milliseconds for all operations                                 | No       | 30000        |
+
 
 ### Sample Configuration
 
@@ -107,7 +110,7 @@ public class Sample {
     // Configure the client
     // ...
     StorageContainerApi storageContainerApi = new StorageContainerApi(client);
-    String containerExtId = "^b0fBC6cf-0CfD-FcED-bcce-65C9759CAcFc$";
+    String containerExtId = "18f6abf8-E025-EbCA-bb97-24CBfe95DcbA";
     StorageContainerResponse storageContainerResponse = storageContainerApi.getStorageContainerByExtId(containerExtId);
   }
 }
@@ -143,7 +146,7 @@ public class Sample {
     // ...
     // perform GET call
     StorageContainerApi storageContainerApi = new StorageContainerApi(client);
-    String containerExtId = "^b0fBC6cf-0CfD-FcED-bcce-65C9759CAcFc$";
+    String containerExtId = "18f6abf8-E025-EbCA-bb97-24CBfe95DcbA";
     StorageContainerResponse storageContainerResponse = storageContainerApi.getStorageContainerByExtId(containerExtId);
     // Extract E-Tag Header
     final String eTagHeader = ApiClient.getEtag(storageContainerResponse);
@@ -164,8 +167,8 @@ List Operations for Nutanix APIs support pagination, filtering, sorting and proj
 
 | Parameter | Description
 |-----------|----------------------------------------------------------------------------------|
-| $page     | specifies the page number of the result set. Must be a positive integer between 0 and the maximum number of pages that are available for that resource. Any number out of this range will be set to its nearest bound. In other words, a page number of less than 0 would be set to 0 and a page number greater than the total available pages would be set to the last page.|
-| $limit    | specifies the total number of records returned in the result set. Must be a positive integer between 0 and 100. Any number out of this range will be set to the default maximum number of records, which is 100. |
+| $page     | specifies the page number of the result set. Must be a positive integer between 0 and the maximum number of pages that are available for that resource. Any number out of this range will lead to no results being returned.|
+| $limit    | specifies the total number of records returned in the result set. Must be a positive integer between 0 and 100. Any number out of this range will lead to a validation error. If the limit is not provided a default value of 50 records will be returned in the result set|
 | $filter   | allows clients to filter a collection of resources. The expression specified with $filter is evaluated for each resource in the collection, and only items where the expression evaluates to true are included in the response. Expression specified with the $filter must conform to the [OData V4.01 URL](https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_SystemQueryOptionfilter) conventions. |
 | $orderby  | allows clients to specify the sort criteria for the returned list of objects. Resources can be sorted in ascending order using asc or descending order using desc. If asc or desc are not specified the resources will be sorted in ascending order by default. For example, 'orderby=templateName desc' would get all templates sorted by templateName in desc order. |
 | $select   | allows clients to request a specific set of properties for each entity or complex type. Expression specified with the $select must conform to the OData V4.01 URL conventions. If a $select expression consists of a single select item that is an asterisk (i.e. *), then all properties on the matching resource will be returned. |
@@ -183,12 +186,12 @@ public class Sample {
     // Configure the client
     // ...
     StorageContainerApi storageContainerApi = new StorageContainerApi(client);
-    int $page = 0;
-    int $limit = 50;
-    String $filter = "string_sample_data";
-    String $orderby = "string_sample_data";
-    String $select = "string_sample_data";
-    StorageContainersResponse storageContainersResponse = storageContainerApi.getAllStorageContainers($page, $limit, $filter, $orderby, $select);
+    int page = 0;
+    int limit = 50;
+    String null = "string_sample_data";
+    String null = "string_sample_data";
+    String null = "string_sample_data";
+    StorageContainersResponse storageContainersResponse = storageContainerApi.getAllStorageContainers(page, limit, null, null, null);
   }
 }
 ```
@@ -197,10 +200,10 @@ The list of filterable and sortable fields with expansion keys can be found in t
 
 ## API Reference
 
-This library has a full set of [API Reference Documentation](https://developers.nutanix.com/). This documentation is auto-generated, and the location may change.
+This library has a full set of [API Reference Documentation](https://developers.nutanix.com/sdk-reference?namespace=storage&version=v4.0.a3&language=java). This documentation is auto-generated, and the location may change.
 
 ## License
 This library is licensed under Nutanix proprietary license. Full license text is available in [LICENSE](https://developers.nutanix.com/license).
 
 ## Contact us
-In case of issues please reach out to us at the [mailing list](@sdk@nutanix.com)
+In case of issues please reach out to us at the [mailing list](mailto:sdk@nutanix.com)

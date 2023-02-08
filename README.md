@@ -13,6 +13,7 @@ available for the following namespaces.
 | iam          | Manage User Identity and Access.                                                                     |
 | lcm          | Manage Infrastructure, Software and Firmware Upgrades. |
 | files        | Manage virtual file servers, create and configure shares for client access, protect them using DR and sync policies, provision storage space and administer security controls.|
+| networking   | Manage networking configuration on Nutanix clusters, including AHV and advanced networking.|
 # Project Structure
 Project contains a top level directory corresponding to each namespace as listed above. Each namespace directory contains 
 a README with instructions for getting started with that client. 
@@ -30,7 +31,7 @@ In order to use the aiops java client
 <dependency>
   <groupId>com.nutanix.api</groupId>
   <artifactId>aiops-java-client</artifactId>
-  <version>4.0.1-alpha-1</version>
+  <version>4.0.2-alpha-1</version>
 </dependency>
 ```
 and to use the vmm client 
@@ -39,7 +40,7 @@ and to use the vmm client
 <dependency>
   <groupId>com.nutanix.api</groupId>
   <artifactId>vmm-java-client</artifactId>
-  <version>4.0.1-alpha-1</version>
+  <version>4.0.2-alpha-1</version>
 </dependency>
 ```
 and so on...
@@ -94,4 +95,4 @@ These clients have a full set of [API Reference Documentation](https://developer
 This library is licensed under Nutanix proprietary license. Full license text is available in [LICENSE](https://developers.nutanix.com/license).
 
 ## Contact us
-In case of issues please reach out to us at the [mailing list](@sdk@nutanix.com).
+In case of issues please reach out to us at the [mailing list](mailto:sdk@nutanix.com).

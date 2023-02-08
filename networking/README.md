@@ -1,6 +1,6 @@
-# Java Client For Nutanix Prism Versioned APIs
+# Java Client For Nutanix Networking Versioned APIs
 
-The Java client for Nutanix Prism Versioned APIs is designed for Java client application developers offering them simple and flexible access to APIs that task Management, Category Associations, Prism Central DR, Alerts, Alert policies, Events and Audits.
+The Java client for Nutanix Networking Versioned APIs is designed for Java client application developers offering them simple and flexible access to APIs that manage networking configuration on Nutanix clusters, including AHV and advanced networking.
 ## Features
 - Invoke Nutanix APIs with a simple interface.
 - Handle Authentication seamlessly.
@@ -9,7 +9,7 @@ The Java client for Nutanix Prism Versioned APIs is designed for Java client app
 ## Version
 
 - API version: v4.0.a1
-- Package version: 4.0.2-alpha-1
+- Package version: 4.0.1-alpha-1
 
 ## Requirements.
 
@@ -27,8 +27,8 @@ This library is distributed on [Maven Central](https://search.maven.org/). In or
 ```xml
 <dependency>
   <groupId>com.nutanix.api</groupId>
-  <artifactId>prism-java-client</artifactId>
-  <version>4.0.2-alpha-1</version>
+  <artifactId>networking-java-client</artifactId>
+  <version>4.0.1-alpha-1</version>
 </dependency>
 ```
 
@@ -36,13 +36,13 @@ This library is distributed on [Maven Central](https://search.maven.org/). In or
 
 ```groovy
 dependencies {
-    implementation("com.nutanix.api:prism-java-client:4.0.2-alpha-1")
+    implementation("com.nutanix.api:networking-java-client:4.0.1-alpha-1")
 }
 ```
 
 ## Configuration
 
-The Java client for Nutanix Prism Versioned APIs can be configured with the following parameters
+The Java client for Nutanix Networking Versioned APIs can be configured with the following parameters
 
 | Parameter | Description                                                                      | Required | Default Value|
 |-----------|----------------------------------------------------------------------------------|----------|--------------|
@@ -62,7 +62,7 @@ The Java client for Nutanix Prism Versioned APIs can be configured with the foll
 ### Sample Configuration
 
 ```java
-import com.nutanix.pri.java.client.ApiClient;
+import com.nutanix.net.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -84,7 +84,7 @@ The client can be configured to retry requests that fail with the following stat
 - [502 - Bad Gateway](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502)
 - [503 - Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503)
 ```java
-import com.nutanix.pri.java.client.ApiClient;
+import com.nutanix.net.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -100,19 +100,19 @@ public class Sample {
 ### Invoking an operation
 
 ```java
-import com.nutanix.pri.java.client.ApiClient;
-import com.nutanix.pri.java.client.api.SystemDefinedPoliciesApi;
-import com.nutanix.dp1.pri.prism.v4.policies.GetSdaPolicyApiResponse;
+// this sample code is not usable directly for real use-case
+
+import com.nutanix.net.java.client.ApiClient;
+import com.nutanix.net.java.client.api.SampleApi;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    SystemDefinedPoliciesApi systemDefinedPoliciesApi = new SystemDefinedPoliciesApi(client);
-    String entityUid = "string_sample_data";
-    boolean globalConfig = true;
-    GetSdaPolicyApiResponse getSdaPolicyApiResponse = systemDefinedPoliciesApi.getSdaPolicyById(entityUid, globalConfig);
+    SampleApi sampleApi = new SampleApi(client);
+    final String extId = '66673023168b486898d76bc27e5ce9c2';
+    SampleGetResponse sampleResponse = sampleApi.getSampleByExtId(extId);
   }
 }
 ```
@@ -123,7 +123,7 @@ The library provides the ability to specify additional options that can be appli
 The 'ApiClient' can be configured to send additional headers on each request.
 
 ```java
-import com.nutanix.pri.java.client.ApiClient;
+import com.nutanix.net.java.client.ApiClient;
 
 public class Sample {
   public void configureClient() {
@@ -137,28 +137,26 @@ You can also modify the headers sent with each individual operation:
 #### Operation specific headers
 Nutanix APIs require that concurrent updates are protected using [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) headers. This would mean that the [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) header received in the response of a fetch (GET) operation should be used as an [If-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match) header for the modification (PUT) operation.
 ```java
-import com.nutanix.pri.java.client.ApiClient;
-import com.nutanix.dp1.pri.prism.v4.policies.GetSdaPolicyApiResponse;
+import com.nutanix.net.java.client.ApiClient;
+
+
+// this sample code is not usable directly for real use-case
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    // perform GET call
-    SystemDefinedPoliciesApi systemDefinedPoliciesApi = new SystemDefinedPoliciesApi(client);
-    String entityUid = "string_sample_data";
-    boolean globalConfig = true;
-    GetSdaPolicyApiResponse getSdaPolicyApiResponse = systemDefinedPoliciesApi.getSdaPolicyById(entityUid, globalConfig);
+    SampleApi samplesApi = new SampleApi(client);
+    final String extId = '66673023168b486898d76bc27e5ce9c2';
+    SampleGetResponse sampleResponse = samplesApi.getSampleByExtId(extId);
     // Extract E-Tag Header
-    final String eTagHeader = ApiClient.getEtag(getSdaPolicyApiResponse);
+    final String eTagHeader = ApiClient.getEtag(sampleResponse);
     // ...
-    // Perform update call with received E-Tag reference
-    SystemDefined systemDefined = (SystemDefined) getSdaPolicyApiResponse.getData();
-    // initialize/change parameters for update
+    Sample body = (Sample) sampleResponse.getData();
     HashMap<String, Object> opts = new HashMap<>();
     opts.put("If-Match", eTagHeader);
-    systemDefinedPoliciesApi.updateSdaPolicy(systemDefined, entityUid, opts);
+    samplesApi.updateSampleByExtId(body,extId,opts);
   }
 }
 
@@ -178,21 +176,21 @@ List Operations for Nutanix APIs support pagination, filtering, sorting and proj
 
 List Options can be passed to list operations in order to perform pagination, filtering etc.
 ```java
-import com.nutanix.pri.java.client.ApiClient;
-import com.nutanix.pri.java.client.api.AlertsApi;
-import com.nutanix.dp1.pri.prism.v4.alerts.AlertListApiResponse;
+import com.nutanix.net.java.client.ApiClient;
+import com.nutanix.net.java.client.api.BgpSessionApi;
+import com.nutanix.dp1.net.networking.v4.config.BgpSessionListApiResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    AlertsApi alertsApi = new AlertsApi(client);
+    BgpSessionApi bgpSessionApi = new BgpSessionApi(client);
     int page = 0;
     int limit = 50;
     String null = "string_sample_data";
     String null = "string_sample_data";
-    AlertListApiResponse alertListApiResponse = alertsApi.getAlerts(page, limit, null, null);
+    BgpSessionListApiResponse bgpSessionListApiResponse = bgpSessionApi.listBgpSessions(page, limit, null, null);
   }
 }
 ```
@@ -201,7 +199,7 @@ The list of filterable and sortable fields with expansion keys can be found in t
 
 ## API Reference
 
-This library has a full set of [API Reference Documentation](https://developers.nutanix.com/sdk-reference?namespace=prism&version=v4.0.a1&language=java). This documentation is auto-generated, and the location may change.
+This library has a full set of [API Reference Documentation](https://developers.nutanix.com/sdk-reference?namespace=networking&version=v4.0.a1&language=java). This documentation is auto-generated, and the location may change.
 
 ## License
 This library is licensed under Nutanix proprietary license. Full license text is available in [LICENSE](https://developers.nutanix.com/license).

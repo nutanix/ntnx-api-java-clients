@@ -8,8 +8,8 @@ The Java client for Nutanix Clustermgmt Versioned APIs is designed for Java clie
 - Use standard methods for installation.
 ## Version
 
-- API version: v4.0.a1
-- Package version: 4.0.1-alpha-1
+- API version: v4.0.a2
+- Package version: 4.0.2-alpha-2
 
 ## Requirements.
 
@@ -20,7 +20,7 @@ The Java client for Nutanix Clustermgmt Versioned APIs is designed for Java clie
 
 ### Installation
 
-This library is distributed on [Maven Central](https://mvnrepository.com/repos/central). In order to add it as a dependency, please do the following:
+This library is distributed on [Maven Central](https://search.maven.org/). In order to add it as a dependency, please do the following:
 
 #### Using Maven
 
@@ -28,7 +28,7 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 <dependency>
   <groupId>com.nutanix.api</groupId>
   <artifactId>clustermgmt-java-client</artifactId>
-  <version>4.0.1-alpha-1</version>
+  <version>4.0.2-alpha-2</version>
 </dependency>
 ```
 
@@ -36,7 +36,7 @@ This library is distributed on [Maven Central](https://mvnrepository.com/repos/c
 
 ```groovy
 dependencies {
-    implementation("com.nutanix.api:clustermgmt-java-client:4.0.1-alpha-1")
+    implementation("com.nutanix.api:clustermgmt-java-client:4.0.2-alpha-2")
 }
 ```
 
@@ -46,6 +46,7 @@ The Java client for Nutanix Clustermgmt Versioned APIs can be configured with th
 
 | Parameter | Description                                                                      | Required | Default Value|
 |-----------|----------------------------------------------------------------------------------|----------|--------------|
+| scheme    | URI scheme for connecting to the cluster (HTTP or HTTPS using SSL/TLS)           | No       | https        |
 | host      | IPv4/IPv6 address or FQDN of the cluster to which the client will connect to     | Yes      | N/A          |
 | port      | Port on the cluster to which the client will connect to                          | No       | 9440         |
 | username  | Username to connect to a cluster                                                 | Yes      | N/A          |
@@ -54,7 +55,9 @@ The Java client for Nutanix Clustermgmt Versioned APIs can be configured with th
 | verifySsl | Verify SSL certificate of cluster, the client will connect to                    | No       | True         |
 | maxRetryAttempts| Maximum number of retry attempts while connecting to the cluster           | No       | 5            |
 | retryInterval| Interval in milliseconds at which retry attempts are made                     | No       | 3000         |
-| timeout   | Global timeout in milliseconds for all operations                                | No       | 30000        |
+| connectTimeout| Connection timeout in milliseconds for all operations                        | No       | 30000        |
+| readTimeout| Read timeout in milliseconds for all operations                                 | No       | 30000        |
+
 
 ### Sample Configuration
 
@@ -97,19 +100,18 @@ public class Sample {
 ### Invoking an operation
 
 ```java
-// this sample code is not usable directly for real use-case
-
 import com.nutanix.clu.java.client.ApiClient;
-import com.nutanix.clu.java.client.api.SampleApi;
+import com.nutanix.clu.java.client.api.ClusterApi;
+import com.nutanix.dp1.clu.clustermgmt.v4.config.GetClusterResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    SampleApi sampleApi = new SampleApi(client);
-    final String extId = '66673023168b486898d76bc27e5ce9c2';
-    SampleGetResponse sampleResponse = sampleApi.getSampleByExtId(extId);
+    ClusterApi clusterApi = new ClusterApi(client);
+    String clusterExtId = "1B3629ec-e507-524a-BEdB-F9eF55b671af";
+    GetClusterResponse getClusterResponse = clusterApi.getCluster(clusterExtId);
   }
 }
 ```
@@ -135,25 +137,26 @@ You can also modify the headers sent with each individual operation:
 Nutanix APIs require that concurrent updates are protected using [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) headers. This would mean that the [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) header received in the response of a fetch (GET) operation should be used as an [If-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match) header for the modification (PUT) operation.
 ```java
 import com.nutanix.clu.java.client.ApiClient;
-
-
-// this sample code is not usable directly for real use-case
+import com.nutanix.dp1.clu.clustermgmt.v4.config.GetClusterResponse;
 
 public class Sample {
   public void performOperation() {
     ApiClient client = new ApiClient();
     // Configure the client
     // ...
-    SampleApi samplesApi = new SampleApi(client);
-    final String extId = '66673023168b486898d76bc27e5ce9c2';
-    SampleGetResponse sampleResponse = samplesApi.getSampleByExtId(extId);
+    // perform GET call
+    ClusterApi clusterApi = new ClusterApi(client);
+    String clusterExtId = "1B3629ec-e507-524a-BEdB-F9eF55b671af";
+    GetClusterResponse getClusterResponse = clusterApi.getCluster(clusterExtId);
     // Extract E-Tag Header
-    final String eTagHeader = ApiClient.getEtag(sampleResponse);
+    final String eTagHeader = ApiClient.getEtag(getClusterResponse);
     // ...
-    Sample body = (Sample) sampleResponse.getData();
+    // Perform update call with received E-Tag reference
+    ClusterEntity clusterEntity = (ClusterEntity) getClusterResponse.getData();
+    // initialize/change parameters for update
     HashMap<String, Object> opts = new HashMap<>();
     opts.put("If-Match", eTagHeader);
-    samplesApi.updateSampleByExtId(body,extId,opts);
+    clusterApi.updateCluster(clusterEntity, clusterExtId, opts);
   }
 }
 
@@ -164,8 +167,8 @@ List Operations for Nutanix APIs support pagination, filtering, sorting and proj
 
 | Parameter | Description
 |-----------|----------------------------------------------------------------------------------|
-| $page     | specifies the page number of the result set. Must be a positive integer between 0 and the maximum number of pages that are available for that resource. Any number out of this range will be set to its nearest bound. In other words, a page number of less than 0 would be set to 0 and a page number greater than the total available pages would be set to the last page.|
-| $limit    | specifies the total number of records returned in the result set. Must be a positive integer between 0 and 100. Any number out of this range will be set to the default maximum number of records, which is 100. |
+| $page     | specifies the page number of the result set. Must be a positive integer between 0 and the maximum number of pages that are available for that resource. Any number out of this range will lead to no results being returned.|
+| $limit    | specifies the total number of records returned in the result set. Must be a positive integer between 0 and 100. Any number out of this range will lead to a validation error. If the limit is not provided a default value of 50 records will be returned in the result set|
 | $filter   | allows clients to filter a collection of resources. The expression specified with $filter is evaluated for each resource in the collection, and only items where the expression evaluates to true are included in the response. Expression specified with the $filter must conform to the [OData V4.01 URL](https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_SystemQueryOptionfilter) conventions. |
 | $orderby  | allows clients to specify the sort criteria for the returned list of objects. Resources can be sorted in ascending order using asc or descending order using desc. If asc or desc are not specified the resources will be sorted in ascending order by default. For example, 'orderby=templateName desc' would get all templates sorted by templateName in desc order. |
 | $select   | allows clients to request a specific set of properties for each entity or complex type. Expression specified with the $select must conform to the OData V4.01 URL conventions. If a $select expression consists of a single select item that is an asterisk (i.e. *), then all properties on the matching resource will be returned. |
@@ -183,11 +186,11 @@ public class Sample {
     // Configure the client
     // ...
     ClusterApi clusterApi = new ClusterApi(client);
-    int $page = 0;
-    int $limit = 50;
-    String $filter = "string_sample_data";
-    String $orderby = "string_sample_data";
-    GetClustersResponse getClustersResponse = clusterApi.getClusters($page, $limit, $filter, $orderby);
+    int page = 0;
+    int limit = 50;
+    String null = "string_sample_data";
+    String null = "string_sample_data";
+    GetClustersResponse getClustersResponse = clusterApi.getClusters(page, limit, null, null);
   }
 }
 ```
@@ -196,10 +199,10 @@ The list of filterable and sortable fields with expansion keys can be found in t
 
 ## API Reference
 
-This library has a full set of [API Reference Documentation](https://developers.nutanix.com/). This documentation is auto-generated, and the location may change.
+This library has a full set of [API Reference Documentation](https://developers.nutanix.com/sdk-reference?namespace=clustermgmt&version=v4.0.a2&language=java). This documentation is auto-generated, and the location may change.
 
 ## License
 This library is licensed under Nutanix proprietary license. Full license text is available in [LICENSE](https://developers.nutanix.com/license).
 
 ## Contact us
-In case of issues please reach out to us at the [mailing list](@sdk@nutanix.com)
+In case of issues please reach out to us at the [mailing list](mailto:sdk@nutanix.com)
